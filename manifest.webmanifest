@@ -1,0 +1,19 @@
+{
+  "name": "Dirt Tri",
+  "short_name": "Dirt Tri",
+  "description": "Offline triathlon leg-time tracking",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#eef3f5",
+  "theme_color": "#126e8a",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

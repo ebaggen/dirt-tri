@@ -1,0 +1,1185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Dirt Tri">
+<meta name="theme-color" content="#126e8a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-512.png">
+<link rel="icon" href="icon-512.png">
+<title>Dirt Tri</title>
+<style>
+  :root {
+    --bg: #eef3f5;
+    --panel: #ffffff;
+    --ink: #0e2a3a;
+    --muted: #5a7383;
+    --brand: #126e8a;
+    --brand-dark: #0a4a5e;
+    --accent: #1c9b6f;
+    --accent-dark: #137554;
+    --danger: #c0392b;
+    --warn: #d68a17;
+    --tile: #ffffff;
+    --tile-border: #cfdae2;
+    --done-bg: #def3e8;
+    --done-border: #1c9b6f;
+    --dnf-bg: #f3e1dd;
+    --dnf-border: #c0392b;
+    --shadow: 0 1px 2px rgba(14,42,58,.06), 0 4px 12px rgba(14,42,58,.05);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 18px;
+    line-height: 1.35;
+    -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
+  h1, h2, h3 { margin: 0 0 8px; font-weight: 800; letter-spacing: -0.01em; }
+  h1 { font-size: 30px; }
+  h2 { font-size: 24px; }
+  h3 { font-size: 20px; color: var(--brand-dark); }
+  main { padding: 16px; padding-bottom: 80px; max-width: 1200px; margin: 0 auto; }
+  header.bar {
+    position: sticky; top: 0; z-index: 20;
+    background: var(--brand); color: #fff;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: var(--shadow);
+  }
+  header.bar h1 { color: #fff; font-size: 22px; margin: 0; flex: 0 0 auto; }
+  header.bar .clock { font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700; flex: 1; text-align: center; }
+  header.bar .race-name { flex: 1; text-align: center; opacity: 0.9; font-size: 16px; }
+  button, .btn {
+    font: inherit;
+    font-weight: 700;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    min-height: 56px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    touch-action: manipulation;
+  }
+  button:active { transform: translateY(1px); box-shadow: none; }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+  button.secondary { background: var(--panel); color: var(--ink); border: 2px solid var(--tile-border); }
+  button.ghost { background: transparent; color: var(--brand-dark); box-shadow: none; }
+  button.danger { background: var(--danger); }
+  button.accent { background: var(--accent); }
+  button.warn { background: var(--warn); }
+  button.big { font-size: 22px; min-height: 72px; padding: 18px 28px; }
+  button.wide { width: 100%; }
+  input[type=text], input[type=time], input[type=search] {
+    font: inherit;
+    border: 2px solid var(--tile-border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    min-height: 50px;
+    background: var(--panel);
+    color: var(--ink);
+    width: 100%;
+  }
+  input[type=search] { font-size: 20px; }
+  label { display: block; font-weight: 700; margin-bottom: 6px; color: var(--muted); }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .row > * { flex: 0 0 auto; }
+  .row.fill > input { flex: 1 1 200px; }
+  .stack > * + * { margin-top: 12px; }
+  .card { background: var(--panel); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
+  .card + .card { margin-top: 12px; }
+  .grid-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+  }
+  .tile {
+    background: var(--tile);
+    border: 1px solid var(--tile-border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    min-height: 88px;
+    display: flex; flex-direction: column; gap: 8px;
+    cursor: pointer;
+    text-align: left;
+    color: var(--ink);
+    box-shadow: var(--shadow);
+    transition: transform .05s ease;
+  }
+  .tile:active { transform: translateY(1px); }
+  .tile .name { font-size: 22px; font-weight: 800; line-height: 1.15; word-break: break-word; }
+  .tile .dnf-caption { font-size: 13px; font-weight: 600; color: var(--danger); letter-spacing: 0.02em; }
+  .tile.type-team .name::before { content: "👥 "; font-weight: 400; }
+  .tile.finished { background: var(--done-bg); border-color: var(--done-border); cursor: default; }
+  .tile.dnf { background: var(--dnf-bg); border-color: var(--dnf-border); cursor: default; opacity: 0.9; }
+  .section { margin-top: 18px; }
+  .section h3 { display: flex; align-items: baseline; gap: 10px; }
+  .section h3 .count { font-weight: 600; color: var(--muted); font-size: 16px; }
+  .pill { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #efe0bf; color: var(--brand-dark); font-weight: 700; letter-spacing: 0.04em; }
+  .pill.team { background: #d8e7f3; color: #1d4a73; }
+  .empty { color: var(--muted); padding: 8px 0; }
+  .list-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; border-bottom: 1px solid #e3d1a6;
+  }
+  .list-row:last-child { border-bottom: none; }
+  .list-row .name { flex: 1; font-weight: 700; font-size: 18px; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #e3d1a6; }
+  th { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.dnf-row td { color: var(--danger); }
+  .toast {
+    position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+    background: #1c1408; color: #fff;
+    padding: 14px 20px; border-radius: 14px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.3);
+    z-index: 100; max-width: 92vw;
+  }
+  .toast.hidden { display: none; }
+  .toast button { background: var(--warn); padding: 8px 14px; min-height: 0; border-radius: 8px; }
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200; padding: 20px;
+  }
+  .modal-backdrop.hidden { display: none; }
+  .modal {
+    background: var(--panel); border-radius: 16px; padding: 22px;
+    max-width: 540px; width: 100%; max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(0,0,0,.4);
+  }
+  .modal h2 { margin-bottom: 14px; }
+  .countdown {
+    font-size: 220px; font-weight: 900; text-align: center; line-height: 1;
+    color: var(--brand); padding: 30px 0; font-variant-numeric: tabular-nums;
+  }
+  .countdown.go { color: var(--accent); font-size: 160px; }
+  .leg-edit-row { display: grid; grid-template-columns: 90px 1fr auto; gap: 10px; align-items: center; padding: 8px 0; }
+  .leg-edit-row .leg-label { font-weight: 700; text-transform: uppercase; font-size: 14px; color: var(--muted); }
+  .leg-edit-row .time-display { font-variant-numeric: tabular-nums; font-size: 18px; }
+  .leg-edit-row .time-elapsed { color: var(--muted); font-size: 14px; }
+  .menu-actions button { width: 100%; justify-content: flex-start; text-align: left; margin-bottom: 8px; }
+  .install-note { background: #fdf3dd; border-left: 4px solid var(--warn); padding: 12px 14px; border-radius: 8px; font-size: 14px; color: #5a4200; margin-bottom: 12px; }
+  .leaderboards { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 900px) { .leaderboards { grid-template-columns: 1fr 1fr; } }
+  .badge-team { font-size: 13px; padding: 2px 8px; background: #e0eaf2; color: #214a6b; border-radius: 6px; font-weight: 700; letter-spacing: 0.04em; }
+  .badge-solo { font-size: 13px; padding: 2px 8px; background: #e3f0eb; color: #137554; border-radius: 6px; font-weight: 700; letter-spacing: 0.04em; }
+  .badge-dist { font-size: 13px; padding: 2px 8px; border-radius: 6px; font-weight: 700; letter-spacing: 0.04em; }
+  .badge-dist.sprint { background: #fdebd0; color: #8a5a00; }
+  .badge-dist.olympic { background: #d8e9f5; color: #0a4a5e; }
+  .tile .badges { display: flex; gap: 6px; margin-top: 2px; }
+  .select {
+    font: inherit; min-height: 50px; padding: 0 12px;
+    border-radius: 14px; border: 2px solid var(--tile-border);
+    background: var(--panel); color: var(--ink);
+  }
+</style>
+</head>
+<body>
+
+<div id="bar-slot"></div>
+<main id="app"></main>
+<div id="toast" class="toast hidden"></div>
+<div id="modal" class="modal-backdrop hidden"></div>
+
+<script>
+'use strict';
+
+// ---------- Service worker ----------
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch((e) => console.warn('SW failed', e));
+  });
+}
+
+// ---------- IndexedDB ----------
+const DB_NAME = 'dirt-tri';
+const DB_VER = 1;
+const STORE = 'state';
+
+function openDb() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function dbGet(key) {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readonly');
+    const r = tx.objectStore(STORE).get(key);
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+  });
+}
+async function dbSet(key, value) {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).put(value, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+// ---------- App state ----------
+const LEGS = ['swim', 'bike', 'run'];
+const LEG_LABEL = { swim: 'SWIM', bike: 'BIKE', run: 'RUN' };
+const LEG_EMOJI = { swim: '🏊', bike: '🚴', run: '🏃' };
+const DISTANCES = ['sprint', 'olympic'];
+const DIST_LABEL = { sprint: 'Sprint', olympic: 'Olympic' };
+const DIST_SHORT = { sprint: 'SPR', olympic: 'OLY' };
+
+const app = {
+  race: null,
+  archive: [],
+  view: 'setup',
+  search: '',
+  wakeLock: null,
+  clockTimer: null,
+  archiveViewId: null,
+  toastTimer: null,
+};
+
+function uid() { return (crypto.randomUUID && crypto.randomUUID()) || ('id-' + Math.random().toString(36).slice(2) + Date.now()); }
+
+function newRace(name) {
+  const today = new Date();
+  return {
+    id: uid(),
+    name: name || today.toLocaleDateString(),
+    state: 'setup',
+    startTime: null,
+    endTime: null,
+    participants: [],
+    createdAt: today.toISOString(),
+    finishedAt: null,
+  };
+}
+
+function newParticipant(name, type, distance, startTime) {
+  return {
+    id: uid(),
+    name: name.trim(),
+    type,
+    distance: distance || 'sprint',
+    startTime: startTime || null,
+    legTimes: { swim: null, bike: null, run: null },
+    dnf: null,
+  };
+}
+
+function backfillParticipants(race) {
+  if (!race || !Array.isArray(race.participants)) return;
+  for (const p of race.participants) {
+    if (!p.distance) p.distance = 'sprint';
+  }
+}
+
+function nextLegFor(p) {
+  if (p.dnf) return null;
+  for (const leg of LEGS) if (!p.legTimes[leg]) return leg;
+  return null;
+}
+function isFinished(p) { return !p.dnf && LEGS.every((l) => p.legTimes[l]); }
+function startTimeFor(p) { return p.startTime || app.race?.startTime; }
+
+function elapsedMs(fromIso, toIso) {
+  if (!fromIso || !toIso) return null;
+  return new Date(toIso).getTime() - new Date(fromIso).getTime();
+}
+function formatElapsed(ms) {
+  if (ms == null) return '—';
+  const neg = ms < 0; ms = Math.abs(ms);
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return (neg ? '-' : '') + h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+function formatWall(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleTimeString([], { hour12: false });
+}
+
+async function persist() {
+  await dbSet('race', app.race);
+  await dbSet('archive', app.archive);
+}
+
+async function loadState() {
+  app.race = (await dbGet('race')) || newRace();
+  app.archive = (await dbGet('archive')) || [];
+  backfillParticipants(app.race);
+  for (const r of app.archive) backfillParticipants(r);
+  if (app.race.state === 'racing') app.view = 'racing';
+  else if (app.race.state === 'finished') app.view = 'finished';
+  else app.view = 'setup';
+}
+
+// ---------- Wake Lock ----------
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      app.wakeLock = await navigator.wakeLock.request('screen');
+      app.wakeLock.addEventListener('release', () => { app.wakeLock = null; });
+    }
+  } catch (_) {}
+}
+function releaseWakeLock() {
+  if (app.wakeLock) { try { app.wakeLock.release(); } catch (_) {} app.wakeLock = null; }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && app.race && app.race.state === 'racing') {
+    requestWakeLock();
+  }
+});
+
+// ---------- DOM helpers ----------
+function el(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  if (props) {
+    for (const k of Object.keys(props)) {
+      const v = props[k];
+      if (v == null || v === false) continue;
+      if (k === 'class') e.className = v;
+      else if (k === 'style') e.style.cssText = v;
+      else if (k === 'html') e.innerHTML = v;
+      else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2).toLowerCase(), v);
+      else e.setAttribute(k, v === true ? '' : v);
+    }
+  }
+  for (const k of kids.flat(Infinity)) {
+    if (k == null || k === false) continue;
+    e.appendChild(typeof k === 'string' || typeof k === 'number' ? document.createTextNode(String(k)) : k);
+  }
+  return e;
+}
+
+// ---------- Toast ----------
+function showToast(message, undoFn) {
+  const t = document.getElementById('toast');
+  t.innerHTML = '';
+  t.appendChild(el('span', null, message));
+  if (undoFn) {
+    t.appendChild(el('button', { onclick: async () => {
+      hideToast();
+      await undoFn();
+      await persist();
+      render();
+    }}, 'UNDO'));
+  }
+  t.classList.remove('hidden');
+  clearTimeout(app.toastTimer);
+  app.toastTimer = setTimeout(hideToast, 5000);
+}
+function hideToast() {
+  clearTimeout(app.toastTimer);
+  document.getElementById('toast').classList.add('hidden');
+}
+
+// ---------- Modal ----------
+function showModal(builderFn) {
+  const m = document.getElementById('modal');
+  m.innerHTML = '';
+  const content = builderFn(closeModal);
+  const box = el('div', { class: 'modal' });
+  if (Array.isArray(content)) content.forEach((c) => box.appendChild(c));
+  else box.appendChild(content);
+  m.appendChild(box);
+  m.classList.remove('hidden');
+}
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+  document.getElementById('modal').innerHTML = '';
+}
+
+// ---------- Render: bar ----------
+function renderBar() {
+  const slot = document.getElementById('bar-slot');
+  slot.innerHTML = '';
+  if (!app.race) return;
+  const left = el('h1', null, 'Dirt Tri');
+  const mid = (app.race.state === 'racing')
+    ? el('div', { class: 'clock', id: 'race-clock' }, '0:00:00')
+    : el('div', { class: 'race-name' }, app.race.name || '');
+  const children = [left, mid];
+  if (app.view !== 'setup' && (app.race.state === 'racing' || app.race.state === 'finished')) {
+    children.push(el('button', { class: 'secondary', onclick: openMenu }, 'Menu'));
+  }
+  slot.appendChild(el('header', { class: 'bar' }, children));
+}
+
+function startClock() {
+  stopClock();
+  const tick = () => {
+    const node = document.getElementById('race-clock');
+    if (!node || !app.race || !app.race.startTime) return;
+    node.textContent = formatElapsed(Date.now() - new Date(app.race.startTime).getTime());
+  };
+  tick();
+  app.clockTimer = setInterval(tick, 500);
+}
+function stopClock() {
+  if (app.clockTimer) { clearInterval(app.clockTimer); app.clockTimer = null; }
+}
+
+// ---------- View: Setup ----------
+function renderSetup() {
+  const r = app.race;
+  const root = el('div', { class: 'stack' });
+
+  root.appendChild(el('div', { class: 'card stack' }, [
+    el('h2', null, 'Race setup'),
+    el('label', { for: 'race-name' }, 'Race name'),
+    el('input', {
+      type: 'text', id: 'race-name', value: r.name || '',
+      oninput: (e) => { r.name = e.target.value; persist(); }
+    }),
+  ]));
+
+  // Add participant
+  root.appendChild(el('div', { class: 'card stack' }, [
+    el('h2', null, 'Participants'),
+    addParticipantForm(),
+    participantList(),
+  ]));
+
+  // Bottom actions
+  const startBtn = el('button', {
+    class: 'accent big wide', disabled: r.participants.length === 0,
+    onclick: showCountdown,
+  }, 'START RACE');
+  root.appendChild(el('div', { class: 'card stack' }, [
+    startBtn,
+    el('div', { class: 'row' }, [
+      el('button', { class: 'secondary', onclick: () => { app.view = 'archive'; render(); } }, 'Past races'),
+      el('button', { class: 'secondary', onclick: triggerRestore }, 'Restore from backup'),
+      el('button', { class: 'secondary', onclick: downloadBackup }, 'Download backup'),
+    ]),
+    el('div', { class: 'install-note' },
+      'Tip: Before race day, open this page in Safari on the iPad once with internet, ' +
+      'tap the Share button, then "Add to Home Screen". Set Settings → Display & Brightness → Auto-Lock to Never.'),
+  ]));
+
+  return root;
+}
+
+function addParticipantForm() {
+  const nameInput = el('input', { type: 'text', placeholder: 'Name or team name', id: 'add-name' });
+  const typeSelect = el('select', { class: 'select' }, [
+    el('option', { value: 'solo' }, 'Solo'),
+    el('option', { value: 'team' }, 'Team'),
+  ]);
+  const distSelect = el('select', { class: 'select' }, [
+    el('option', { value: 'sprint' }, 'Sprint'),
+    el('option', { value: 'olympic' }, 'Olympic'),
+  ]);
+  const submit = () => {
+    const name = nameInput.value.trim();
+    if (!name) return;
+    app.race.participants.push(newParticipant(name, typeSelect.value, distSelect.value));
+    nameInput.value = '';
+    persist();
+    render();
+    setTimeout(() => document.getElementById('add-name')?.focus(), 0);
+  };
+  nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+  return el('div', { class: 'row fill' }, [
+    nameInput,
+    typeSelect,
+    distSelect,
+    el('button', { class: 'accent', onclick: submit }, 'Add'),
+  ]);
+}
+
+function participantList() {
+  if (app.race.participants.length === 0) {
+    return el('div', { class: 'empty' }, 'No participants yet. Add at least one to start.');
+  }
+  const sorted = [...app.race.participants].sort((a, b) => a.name.localeCompare(b.name));
+  return el('div', null, sorted.map((p) =>
+    el('div', { class: 'list-row' }, [
+      el('span', { class: 'name' }, p.name),
+      el('span', { class: p.type === 'team' ? 'badge-team' : 'badge-solo' }, p.type === 'team' ? 'TEAM' : 'SOLO'),
+      el('span', { class: 'badge-dist ' + p.distance }, DIST_SHORT[p.distance]),
+      el('button', { class: 'ghost', onclick: () => {
+        app.race.participants = app.race.participants.filter((x) => x.id !== p.id);
+        persist(); render();
+      }}, 'Remove'),
+    ])
+  ));
+}
+
+// ---------- Countdown ----------
+function showCountdown() {
+  let value = 3;
+  let interval = null;
+  let canceled = false;
+  showModal((close) => {
+    const num = el('div', { class: 'countdown', id: 'countdown-num' }, String(value));
+    const cancelBtn = el('button', { class: 'secondary wide', onclick: () => {
+      canceled = true;
+      if (interval) clearInterval(interval);
+      close();
+    }}, 'Cancel');
+    interval = setInterval(async () => {
+      if (canceled) return;
+      value -= 1;
+      const n = document.getElementById('countdown-num');
+      if (value > 0) {
+        if (n) n.textContent = String(value);
+      } else if (value === 0) {
+        if (n) { n.textContent = 'GO!'; n.classList.add('go'); }
+      } else {
+        clearInterval(interval);
+        await actuallyStartRace();
+        close();
+      }
+    }, 1000);
+    return [num, cancelBtn];
+  });
+}
+
+async function actuallyStartRace() {
+  app.race.state = 'racing';
+  app.race.startTime = new Date().toISOString();
+  app.view = 'racing';
+  await persist();
+  await requestWakeLock();
+  render();
+}
+
+// ---------- View: Racing ----------
+function renderRacing() {
+  const root = el('div', { class: 'stack' });
+
+  const searchInput = el('input', {
+    type: 'search', placeholder: 'Search names…', value: app.search,
+    autocapitalize: 'none', autocorrect: 'off', spellcheck: 'false',
+    oninput: (e) => {
+      app.search = e.target.value;
+      refreshTileGrid();
+    },
+  });
+  root.appendChild(el('div', { class: 'card' }, searchInput));
+
+  root.appendChild(el('div', { id: 'tile-grid' }));
+
+  root.appendChild(el('div', { class: 'card', style: 'margin-top:24px;' },
+    el('button', { class: 'danger big wide', onclick: confirmEndRace }, '🏁 END RACE')
+  ));
+
+  setTimeout(refreshTileGrid, 0);
+  return root;
+}
+
+function refreshTileGrid() {
+  const host = document.getElementById('tile-grid');
+  if (!host) return;
+  host.innerHTML = '';
+
+  const q = app.search.trim().toLowerCase();
+  const matches = (p) => !q || p.name.toLowerCase().includes(q);
+  const all = app.race.participants.filter(matches);
+
+  const bySection = { swim: [], bike: [], run: [], finished: [], dnf: [] };
+  for (const p of all) {
+    if (p.dnf) bySection.dnf.push(p);
+    else if (isFinished(p)) bySection.finished.push(p);
+    else bySection[nextLegFor(p)].push(p);
+  }
+
+  const sections = [
+    ['🏊 On the swim', 'swim'],
+    ['🚴 On the bike', 'bike'],
+    ['🏃 On the run', 'run'],
+    ['🏁 Finished', 'finished'],
+    ['⛔ Did not finish', 'dnf'],
+  ];
+
+  for (const [label, key] of sections) {
+    const list = bySection[key];
+    if (list.length === 0) continue;
+    list.sort((a, b) => a.name.localeCompare(b.name));
+    const section = el('section', { class: 'section' }, [
+      el('h3', null, [label, el('span', { class: 'count' }, '· ' + list.length)]),
+      el('div', { class: 'grid-tiles' }, list.map((p) => makeTile(p, key))),
+    ]);
+    host.appendChild(section);
+  }
+
+  if (all.length === 0) {
+    host.appendChild(el('div', { class: 'empty' }, q ? 'No matches.' : 'No participants.'));
+  }
+}
+
+function makeTile(p, sectionKey) {
+  const isDone = sectionKey === 'finished';
+  const isDnf = sectionKey === 'dnf';
+  const next = nextLegFor(p);
+  const klass = 'tile type-' + p.type + (isDone ? ' finished' : '') + (isDnf ? ' dnf' : '');
+  const tileChildren = [
+    el('div', { class: 'name' }, p.name),
+    el('div', { class: 'badges' }, [
+      el('span', { class: p.type === 'team' ? 'badge-team' : 'badge-solo' }, p.type === 'team' ? 'TEAM' : 'SOLO'),
+      el('span', { class: 'badge-dist ' + p.distance }, DIST_SHORT[p.distance]),
+    ]),
+  ];
+  if (isDnf) {
+    tileChildren.push(el('div', { class: 'dnf-caption' }, 'DNF on ' + LEG_EMOJI[p.dnf.leg] + ' ' + LEG_LABEL[p.dnf.leg]));
+  }
+  const tile = el('button', { class: klass }, tileChildren);
+  if (!isDone && !isDnf) {
+    tile.addEventListener('click', () => onTapParticipant(p.id));
+  }
+  return tile;
+}
+
+async function onTapParticipant(id) {
+  const p = app.race.participants.find((x) => x.id === id);
+  if (!p) return;
+  const leg = nextLegFor(p);
+  if (!leg) return;
+  const prev = p.legTimes[leg];
+  const now = new Date().toISOString();
+  p.legTimes[leg] = now;
+  await persist();
+  refreshTileGrid();
+  showToast(`Recorded ${LEG_LABEL[leg]} for ${p.name} at ${formatWall(now)}`, async () => {
+    const px = app.race.participants.find((x) => x.id === id);
+    if (px) px.legTimes[leg] = prev;
+  });
+}
+
+function confirmEndRace() {
+  showModal((close) => [
+    el('h2', null, 'End race?'),
+    el('p', null, 'Any un-finished participants will stay marked incomplete. You can still edit times after.'),
+    el('div', { class: 'row' }, [
+      el('button', { class: 'danger', onclick: async () => {
+        app.race.state = 'finished';
+        app.race.endTime = new Date().toISOString();
+        app.race.finishedAt = app.race.endTime;
+        app.view = 'finished';
+        releaseWakeLock();
+        await persist();
+        close();
+        render();
+      }}, 'End race'),
+      el('button', { class: 'secondary', onclick: close }, 'Cancel'),
+    ]),
+  ]);
+}
+
+// ---------- Menu ----------
+function openMenu() {
+  showModal((close) => {
+    const items = [];
+    if (app.race.state === 'racing') {
+      items.push(menuItem('Manage participants', () => { close(); app.view = 'manage'; render(); }));
+      items.push(menuItem('Edit times', () => { close(); app.view = 'editTimes'; render(); }));
+      items.push(menuItem('Download backup', () => { close(); downloadBackup(); }));
+      items.push(menuItem('End race now', () => { close(); confirmEndRace(); }, 'danger'));
+    } else if (app.race.state === 'finished') {
+      items.push(menuItem('Edit times', () => { close(); app.view = 'editTimes'; render(); }));
+      items.push(menuItem('Download backup', () => { close(); downloadBackup(); }));
+      items.push(menuItem('Archive & start new race', () => {
+        close();
+        showModal((c2) => [
+          el('h2', null, 'Archive this race?'),
+          el('p', null, 'Results are saved to Past Races. A new empty race will start.'),
+          el('div', { class: 'row' }, [
+            el('button', { class: 'danger', onclick: async () => {
+              if (app.race) app.archive.push(app.race);
+              app.race = newRace();
+              app.view = 'setup';
+              await persist();
+              c2();
+              render();
+            }}, 'Archive'),
+            el('button', { class: 'secondary', onclick: c2 }, 'Cancel'),
+          ]),
+        ]);
+      }));
+    }
+    return [
+      el('h2', null, 'Menu'),
+      el('div', { class: 'menu-actions stack' }, items),
+      el('button', { class: 'secondary wide', onclick: close }, 'Close'),
+    ];
+  });
+}
+function menuItem(label, fn, klass) {
+  return el('button', { class: klass || 'secondary', onclick: fn }, label);
+}
+
+// ---------- View: Manage participants ----------
+function renderManage() {
+  const root = el('div', { class: 'stack' });
+  root.appendChild(el('div', { class: 'row' }, [
+    el('button', { class: 'secondary', onclick: () => { app.view = 'racing'; render(); } }, '← Back'),
+    el('h2', { style: 'margin:0' }, 'Manage participants'),
+  ]));
+
+  // Add form with optional custom start
+  const nameInput = el('input', { type: 'text', placeholder: 'Name or team name' });
+  const typeSelect = el('select', { class: 'select' }, [
+    el('option', { value: 'solo' }, 'Solo'),
+    el('option', { value: 'team' }, 'Team'),
+  ]);
+  const distSelect = el('select', { class: 'select' }, [
+    el('option', { value: 'sprint' }, 'Sprint'),
+    el('option', { value: 'olympic' }, 'Olympic'),
+  ]);
+  const useCustomStart = el('input', { type: 'checkbox' });
+  const customStart = el('input', { type: 'time', step: '1' });
+  const submit = async () => {
+    const name = nameInput.value.trim();
+    if (!name) return;
+    let startIso = null;
+    if (useCustomStart.checked && customStart.value) {
+      startIso = isoFromWallTime(customStart.value);
+    }
+    app.race.participants.push(newParticipant(name, typeSelect.value, distSelect.value, startIso));
+    nameInput.value = '';
+    useCustomStart.checked = false;
+    customStart.value = '';
+    await persist();
+    render();
+  };
+  root.appendChild(el('div', { class: 'card stack' }, [
+    el('h3', null, 'Add new'),
+    el('div', { class: 'row fill' }, [nameInput, typeSelect, distSelect, el('button', { class: 'accent', onclick: submit }, 'Add')]),
+    el('label', { class: 'row' }, [useCustomStart, ' Use custom start time (otherwise uses race start)']),
+    customStart,
+  ]));
+
+  // List
+  const list = el('div', { class: 'card' });
+  const sorted = [...app.race.participants].sort((a, b) => a.name.localeCompare(b.name));
+  if (sorted.length === 0) list.appendChild(el('div', { class: 'empty' }, 'No participants.'));
+  for (const p of sorted) {
+    const status = p.dnf
+      ? 'DNF (' + LEG_EMOJI[p.dnf.leg] + ' ' + LEG_LABEL[p.dnf.leg] + ')'
+      : isFinished(p) ? '🏁 Finished'
+      : 'On ' + LEG_EMOJI[nextLegFor(p)] + ' ' + LEG_LABEL[nextLegFor(p)];
+    const actions = [];
+    if (p.dnf) {
+      actions.push(el('button', { class: 'secondary', onclick: async () => { p.dnf = null; await persist(); render(); }}, 'Restore'));
+    } else if (!isFinished(p)) {
+      actions.push(el('button', { class: 'warn', onclick: async () => {
+        const leg = nextLegFor(p);
+        p.dnf = { leg, at: new Date().toISOString() };
+        await persist(); render();
+      }}, 'Mark DNF'));
+    }
+    actions.push(el('button', { class: 'danger', onclick: async () => {
+      if (!confirm('Remove ' + p.name + '?')) return;
+      app.race.participants = app.race.participants.filter((x) => x.id !== p.id);
+      await persist(); render();
+    }}, 'Remove'));
+    const distToggle = el('select', { class: 'select', style: 'min-height:40px; padding:0 8px; font-size:14px;', onchange: async (e) => {
+      p.distance = e.target.value;
+      await persist(); render();
+    }}, [
+      el('option', { value: 'sprint', selected: p.distance === 'sprint' }, 'Sprint'),
+      el('option', { value: 'olympic', selected: p.distance === 'olympic' }, 'Olympic'),
+    ]);
+    list.appendChild(el('div', { class: 'list-row' }, [
+      el('span', { class: 'name' }, p.name),
+      el('span', { class: p.type === 'team' ? 'badge-team' : 'badge-solo' }, p.type === 'team' ? 'TEAM' : 'SOLO'),
+      distToggle,
+      el('span', { style: 'color:var(--muted); margin-right:auto;' }, status),
+      ...actions,
+    ]));
+  }
+  root.appendChild(list);
+
+  return root;
+}
+
+// ---------- View: Edit times ----------
+function renderEditTimes() {
+  const root = el('div', { class: 'stack' });
+  root.appendChild(el('div', { class: 'row' }, [
+    el('button', { class: 'secondary', onclick: () => {
+      app.view = app.race.state === 'finished' ? 'finished' : 'racing'; render();
+    }}, '← Back'),
+    el('h2', { style: 'margin:0' }, 'Edit times'),
+  ]));
+
+  const sorted = [...app.race.participants].sort((a, b) => a.name.localeCompare(b.name));
+  if (sorted.length === 0) {
+    root.appendChild(el('div', { class: 'card empty' }, 'No participants.'));
+    return root;
+  }
+
+  for (const p of sorted) {
+    const card = el('div', { class: 'card' });
+    card.appendChild(el('h3', null, [
+      p.name,
+      ' ',
+      el('span', { class: p.type === 'team' ? 'badge-team' : 'badge-solo' }, p.type === 'team' ? 'TEAM' : 'SOLO'),
+    ]));
+    card.appendChild(legEditRow(p, 'start', '🚦 Start', p.startTime || app.race.startTime, !p.startTime));
+    for (const leg of LEGS) {
+      card.appendChild(legEditRow(p, leg, LEG_EMOJI[leg] + ' ' + LEG_LABEL[leg], p.legTimes[leg], false));
+    }
+    root.appendChild(card);
+  }
+  return root;
+}
+
+function legEditRow(p, legKey, label, value, isDefaulted) {
+  const startRef = startTimeFor(p);
+  let elapsedLabel = '';
+  if (legKey === 'start') {
+    elapsedLabel = isDefaulted ? '(race start)' : '(custom)';
+  } else if (value && startRef) {
+    elapsedLabel = '+' + formatElapsed(elapsedMs(startRef, value));
+  }
+  return el('div', { class: 'leg-edit-row' }, [
+    el('div', { class: 'leg-label' }, label),
+    el('div', null, [
+      el('div', { class: 'time-display' }, formatWall(value)),
+      el('div', { class: 'time-elapsed' }, elapsedLabel),
+    ]),
+    el('button', { class: 'secondary', onclick: () => openTimeEditModal(p, legKey, label) }, 'Edit'),
+  ]);
+}
+
+function openTimeEditModal(p, legKey, label) {
+  const currentIso = legKey === 'start' ? (p.startTime || app.race.startTime) : p.legTimes[legKey];
+  showModal((close) => {
+    const input = el('input', { type: 'time', step: '1', value: currentIso ? wallTimeFromIso(currentIso) : '' });
+    const isStart = legKey === 'start';
+    return [
+      el('h2', null, `Edit ${label} — ${p.name}`),
+      el('label', null, 'Wall-clock time (HH:MM:SS, 24-hour)'),
+      input,
+      el('div', { class: 'row', style: 'margin-top:16px;' }, [
+        el('button', { class: 'accent', onclick: async () => {
+          if (!input.value) return;
+          const iso = isoFromWallTime(input.value);
+          if (isStart) p.startTime = iso;
+          else p.legTimes[legKey] = iso;
+          await persist(); close(); render();
+        }}, 'Save'),
+        el('button', { class: 'warn', onclick: async () => {
+          if (isStart) p.startTime = null;
+          else p.legTimes[legKey] = null;
+          await persist(); close(); render();
+        }}, 'Clear'),
+        el('button', { class: 'secondary', onclick: close }, 'Cancel'),
+      ]),
+    ];
+  });
+}
+
+function wallTimeFromIso(iso) {
+  const d = new Date(iso);
+  return [d.getHours(), d.getMinutes(), d.getSeconds()].map((n) => String(n).padStart(2, '0')).join(':');
+}
+function isoFromWallTime(hhmmss) {
+  const ref = app.race.startTime ? new Date(app.race.startTime) : new Date();
+  const parts = hhmmss.split(':').map((x) => parseInt(x, 10));
+  const [hh, mm, ss] = [parts[0] || 0, parts[1] || 0, parts[2] || 0];
+  const d = new Date(ref);
+  d.setHours(hh, mm, ss, 0);
+  return d.toISOString();
+}
+
+// ---------- View: Finished / Results ----------
+function renderFinished(raceArg) {
+  const r = raceArg || app.race;
+  const root = el('div', { class: 'stack' });
+
+  const back = raceArg
+    ? el('button', { class: 'secondary', onclick: () => { app.archiveViewId = null; app.view = 'archive'; render(); } }, '← Past races')
+    : null;
+  root.appendChild(el('div', { class: 'card stack' }, [
+    back,
+    el('h2', null, r.name),
+    el('div', { class: 'row', style: 'gap:24px;' }, [
+      el('div', null, [el('label', null, 'Started'), el('div', null, formatWall(r.startTime))]),
+      el('div', null, [el('label', null, 'Ended'), el('div', null, formatWall(r.endTime))]),
+      el('div', null, [el('label', null, 'Total'), el('div', null, formatElapsed(elapsedMs(r.startTime, r.endTime)))]),
+    ]),
+    !raceArg ? el('div', { class: 'row' }, [
+      el('button', { class: 'accent', onclick: () => downloadCsv(r) }, 'Download CSV'),
+      el('button', { class: 'secondary', onclick: () => copyResultsText(r) }, 'Copy as text'),
+      el('button', { class: 'secondary', onclick: () => shareResults(r) }, 'Share / AirDrop'),
+      el('button', { class: 'secondary', onclick: () => { app.view = 'editTimes'; render(); } }, 'Edit times'),
+    ]) : el('div', { class: 'row' }, [
+      el('button', { class: 'secondary', onclick: () => downloadCsv(r) }, 'Download CSV'),
+      el('button', { class: 'secondary', onclick: () => copyResultsText(r) }, 'Copy as text'),
+    ]),
+  ]));
+
+  const boards = [];
+  for (const type of ['solo', 'team']) {
+    for (const dist of DISTANCES) {
+      const list = r.participants.filter((p) => p.type === type && p.distance === dist);
+      if (list.length === 0) continue;
+      const title = (type === 'solo' ? 'Solo' : 'Team') + ' · ' + DIST_LABEL[dist];
+      boards.push(leaderboardCard(title, list, r));
+    }
+  }
+  if (boards.length === 0) {
+    root.appendChild(el('div', { class: 'card empty' }, 'No participants.'));
+  } else {
+    root.appendChild(el('div', { class: 'leaderboards' }, boards));
+  }
+  return root;
+}
+
+function leaderboardCard(title, list, r) {
+  if (list.length === 0) return el('div', { class: 'card empty' }, 'No ' + title.toLowerCase() + ' participants.');
+
+  const ranked = [...list].sort((a, b) => {
+    const aFin = isFinished(a), bFin = isFinished(b);
+    if (aFin && !bFin) return -1;
+    if (!aFin && bFin) return 1;
+    if (aFin && bFin) {
+      return elapsedMs(a.startTime || r.startTime, a.legTimes.run) - elapsedMs(b.startTime || r.startTime, b.legTimes.run);
+    }
+    if (a.dnf && !b.dnf) return 1;
+    if (!a.dnf && b.dnf) return -1;
+    return a.name.localeCompare(b.name);
+  });
+
+  const rows = ranked.map((p, i) => {
+    const start = p.startTime || r.startTime;
+    const cells = [
+      el('td', null, isFinished(p) ? String(i + 1) : (p.dnf ? 'DNF' : '—')),
+      el('td', null, p.name),
+      el('td', { class: 'num' }, p.legTimes.swim ? formatElapsed(elapsedMs(start, p.legTimes.swim)) : '—'),
+      el('td', { class: 'num' }, p.legTimes.bike ? formatElapsed(elapsedMs(start, p.legTimes.bike)) : '—'),
+      el('td', { class: 'num' }, p.legTimes.run ? formatElapsed(elapsedMs(start, p.legTimes.run)) : '—'),
+      el('td', { class: 'num' }, isFinished(p) ? formatElapsed(elapsedMs(start, p.legTimes.run)) : '—'),
+    ];
+    return el('tr', { class: p.dnf ? 'dnf-row' : '' }, cells);
+  });
+
+  return el('div', { class: 'card' }, [
+    el('h3', null, title + ' (' + list.length + ')'),
+    el('table', null, [
+      el('thead', null, el('tr', null, [
+        el('th', null, '#'),
+        el('th', null, 'Name'),
+        el('th', { class: 'num' }, '🏊 Swim'),
+        el('th', { class: 'num' }, '🚴 Bike'),
+        el('th', { class: 'num' }, '🏃 Run'),
+        el('th', { class: 'num' }, '🏁 Total'),
+      ])),
+      el('tbody', null, rows),
+    ]),
+  ]);
+}
+
+// ---------- CSV / Share ----------
+function csvEscape(s) {
+  const str = String(s == null ? '' : s);
+  if (/[",\n]/.test(str)) return '"' + str.replace(/"/g, '""') + '"';
+  return str;
+}
+function buildCsv(r) {
+  const header = ['Name', 'Type', 'Distance', 'Status', 'Start (wall)', 'Swim split', 'Bike split', 'Run split', 'Total'];
+  const lines = [header.join(',')];
+  for (const p of r.participants) {
+    const start = p.startTime || r.startTime;
+    const status = p.dnf ? 'DNF (' + LEG_LABEL[p.dnf.leg] + ')' : isFinished(p) ? 'Finished' : 'Incomplete';
+    const row = [
+      p.name, p.type, DIST_LABEL[p.distance] || p.distance, status,
+      formatWall(start),
+      p.legTimes.swim ? formatElapsed(elapsedMs(start, p.legTimes.swim)) : '',
+      p.legTimes.bike ? formatElapsed(elapsedMs(start, p.legTimes.bike)) : '',
+      p.legTimes.run ? formatElapsed(elapsedMs(start, p.legTimes.run)) : '',
+      isFinished(p) ? formatElapsed(elapsedMs(start, p.legTimes.run)) : '',
+    ];
+    lines.push(row.map(csvEscape).join(','));
+  }
+  return lines.join('\n');
+}
+function downloadCsv(r) {
+  const blob = new Blob([buildCsv(r)], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (r.name || 'race').replace(/[^a-z0-9\-_ ]/gi, '_') + '-results.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+function buildTextResults(r) {
+  const lines = [];
+  lines.push('Dirt Tri — ' + r.name);
+  lines.push('Start: ' + formatWall(r.startTime) + '   End: ' + formatWall(r.endTime));
+  lines.push('');
+  for (const type of ['solo', 'team']) {
+    for (const dist of DISTANCES) {
+      const list = r.participants.filter((p) => p.type === type && p.distance === dist);
+      if (list.length === 0) continue;
+      lines.push('— ' + (type === 'solo' ? 'SOLO' : 'TEAM') + ' · ' + DIST_LABEL[dist].toUpperCase() + ' —');
+      const ranked = [...list].sort((a, b) => {
+        const aFin = isFinished(a), bFin = isFinished(b);
+        if (aFin && !bFin) return -1;
+        if (!aFin && bFin) return 1;
+        if (aFin && bFin) {
+          const aStart = a.startTime || r.startTime, bStart = b.startTime || r.startTime;
+          return elapsedMs(aStart, a.legTimes.run) - elapsedMs(bStart, b.legTimes.run);
+        }
+        return a.name.localeCompare(b.name);
+      });
+      ranked.forEach((p, i) => {
+        const start = p.startTime || r.startTime;
+        if (isFinished(p)) {
+          lines.push((i + 1) + '. ' + p.name + '  ' + formatElapsed(elapsedMs(start, p.legTimes.run)));
+        } else if (p.dnf) {
+          lines.push('   ' + p.name + '  DNF (' + LEG_LABEL[p.dnf.leg] + ')');
+        } else {
+          lines.push('   ' + p.name + '  incomplete');
+        }
+      });
+      lines.push('');
+    }
+  }
+  return lines.join('\n');
+}
+async function copyResultsText(r) {
+  const txt = buildTextResults(r);
+  try {
+    await navigator.clipboard.writeText(txt);
+    showToast('Results copied to clipboard');
+  } catch (_) {
+    showModal((close) => [
+      el('h2', null, 'Copy results'),
+      el('textarea', { rows: 16, style: 'width:100%; font-family:monospace; font-size:14px;' }, txt),
+      el('button', { class: 'secondary wide', onclick: close }, 'Close'),
+    ]);
+  }
+}
+async function shareResults(r) {
+  const csv = buildCsv(r);
+  const filename = (r.name || 'race').replace(/[^a-z0-9\-_ ]/gi, '_') + '-results.csv';
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [new File([csv], filename, { type: 'text/csv' })] })) {
+      await navigator.share({ files: [new File([csv], filename, { type: 'text/csv' })], title: r.name });
+      return;
+    }
+  } catch (_) {}
+  // Fallback: download
+  downloadCsv(r);
+}
+
+// ---------- Backup / Restore ----------
+function downloadBackup() {
+  const data = JSON.stringify({ race: app.race, archive: app.archive, exportedAt: new Date().toISOString() }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dirt-tri-backup-' + new Date().toISOString().replace(/[:.]/g, '-') + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+function triggerRestore() {
+  const input = el('input', { type: 'file', accept: 'application/json,.json' });
+  input.style.display = 'none';
+  document.body.appendChild(input);
+  input.addEventListener('change', async () => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const text = await file.text();
+    try {
+      const data = JSON.parse(text);
+      if (!confirm('Restore from backup? This will overwrite current race and archive.')) return;
+      if (data.race) app.race = data.race;
+      if (Array.isArray(data.archive)) app.archive = data.archive;
+      await persist();
+      await loadState();
+      render();
+      showToast('Backup restored');
+    } catch (e) {
+      alert('Failed to read backup: ' + e.message);
+    } finally {
+      input.remove();
+    }
+  });
+  input.click();
+}
+
+// ---------- View: Archive ----------
+function renderArchive() {
+  if (app.archiveViewId) {
+    const r = app.archive.find((x) => x.id === app.archiveViewId);
+    if (r) return renderFinished(r);
+  }
+  const root = el('div', { class: 'stack' });
+  root.appendChild(el('div', { class: 'row' }, [
+    el('button', { class: 'secondary', onclick: () => { app.view = app.race ? (app.race.state === 'racing' ? 'racing' : app.race.state === 'finished' ? 'finished' : 'setup') : 'setup'; render(); } }, '← Back'),
+    el('h2', { style: 'margin:0' }, 'Past races'),
+  ]));
+  if (app.archive.length === 0) {
+    root.appendChild(el('div', { class: 'card empty' }, 'No archived races yet.'));
+    return root;
+  }
+  const sorted = [...app.archive].sort((a, b) => (b.finishedAt || b.createdAt).localeCompare(a.finishedAt || a.createdAt));
+  const list = el('div', { class: 'card' });
+  for (const r of sorted) {
+    list.appendChild(el('div', { class: 'list-row' }, [
+      el('span', { class: 'name' }, r.name),
+      el('span', { style: 'color:var(--muted)' }, formatWall(r.startTime) + ' · ' + r.participants.length + ' entrants'),
+      el('button', { class: 'secondary', onclick: () => { app.archiveViewId = r.id; render(); } }, 'View'),
+      el('button', { class: 'danger', onclick: async () => {
+        if (!confirm('Delete archived race "' + r.name + '"?')) return;
+        app.archive = app.archive.filter((x) => x.id !== r.id);
+        await persist(); render();
+      }}, 'Delete'),
+    ]));
+  }
+  root.appendChild(list);
+  return root;
+}
+
+// ---------- Render dispatch ----------
+function render() {
+  stopClock();
+  renderBar();
+  const root = document.getElementById('app');
+  root.innerHTML = '';
+  let view;
+  if (app.view === 'setup') view = renderSetup();
+  else if (app.view === 'racing') view = renderRacing();
+  else if (app.view === 'finished') view = renderFinished();
+  else if (app.view === 'manage') view = renderManage();
+  else if (app.view === 'editTimes') view = renderEditTimes();
+  else if (app.view === 'archive') view = renderArchive();
+  else view = renderSetup();
+  root.appendChild(view);
+  if (app.race && app.race.state === 'racing') startClock();
+}
+
+// ---------- Boot ----------
+(async function boot() {
+  await loadState();
+  if (app.race && app.race.state === 'racing') await requestWakeLock();
+  render();
+})();
+</script>
+</body>
+</html>
