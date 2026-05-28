@@ -109,19 +109,24 @@
     border-radius: var(--radius);
     padding: 16px 18px;
     min-height: 88px;
-    display: flex; flex-direction: column; gap: 8px;
-    cursor: pointer;
-    text-align: left;
+    display: flex; flex-direction: column; gap: 10px;
     color: var(--ink);
     box-shadow: var(--shadow);
-    transition: transform .05s ease;
   }
-  .tile:active { transform: translateY(1px); }
   .tile .name { font-size: 22px; font-weight: 800; line-height: 1.15; word-break: break-word; }
   .tile .dnf-caption { font-size: 13px; font-weight: 600; color: var(--danger); letter-spacing: 0.02em; }
   .tile.type-team .name::before { content: "👥 "; font-weight: 400; }
-  .tile.finished { background: var(--done-bg); border-color: var(--done-border); cursor: default; }
-  .tile.dnf { background: var(--dnf-bg); border-color: var(--dnf-border); cursor: default; opacity: 0.9; }
+  .tile.finished { background: var(--done-bg); border-color: var(--done-border); }
+  .tile.dnf { background: var(--dnf-bg); border-color: var(--dnf-border); opacity: 0.9; }
+  .tile-action {
+    margin-top: auto;
+    width: 100%;
+    font-size: 16px;
+    min-height: 52px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    letter-spacing: 0.02em;
+  }
   .section { margin-top: 18px; }
   .section h3 { display: flex; align-items: baseline; gap: 10px; }
   .section h3 .count { font-weight: 600; color: var(--muted); font-size: 16px; }
@@ -129,11 +134,14 @@
   .pill.team { background: #d8e7f3; color: #1d4a73; }
   .empty { color: var(--muted); padding: 8px 0; }
   .list-row {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px; border-bottom: 1px solid #e3d1a6;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 12px; border-bottom: 1px solid #e3eaf0;
   }
   .list-row:last-child { border-bottom: none; }
-  .list-row .name { flex: 1; font-weight: 700; font-size: 18px; }
+  .list-row .name { flex: 1 1 180px; font-weight: 700; font-size: 18px; min-width: 0; word-break: break-word; }
+  .list-row .status { color: var(--muted); font-size: 14px; flex: 0 1 auto; }
+  .list-row .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-left: auto; }
+  .list-row .controls > * { flex: 0 0 auto; }
   table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
   th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #e3d1a6; }
   th { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
@@ -644,12 +652,17 @@ function makeTile(p, sectionKey) {
   ];
   if (isDnf) {
     tileChildren.push(el('div', { class: 'dnf-caption' }, 'DNF on ' + LEG_EMOJI[p.dnf.leg] + ' ' + LEG_LABEL[p.dnf.leg]));
+  } else if (!isDone) {
+    let label, btnClass = 'tile-action';
+    if (next === 'swim') label = 'Advance to ' + LEG_EMOJI.bike + ' Bike';
+    else if (next === 'bike') label = 'Advance to ' + LEG_EMOJI.run + ' Run';
+    else { label = '🏁 Mark Finished'; btnClass += ' accent'; }
+    tileChildren.push(el('button', {
+      class: btnClass,
+      onclick: () => onTapParticipant(p.id),
+    }, label));
   }
-  const tile = el('button', { class: klass }, tileChildren);
-  if (!isDone && !isDnf) {
-    tile.addEventListener('click', () => onTapParticipant(p.id));
-  }
-  return tile;
+  return el('div', { class: klass }, tileChildren);
 }
 
 async function onTapParticipant(id) {
@@ -777,9 +790,9 @@ function renderManage() {
   if (sorted.length === 0) list.appendChild(el('div', { class: 'empty' }, 'No participants.'));
   for (const p of sorted) {
     const status = p.dnf
-      ? 'DNF (' + LEG_EMOJI[p.dnf.leg] + ' ' + LEG_LABEL[p.dnf.leg] + ')'
-      : isFinished(p) ? '🏁 Finished'
-      : 'On ' + LEG_EMOJI[nextLegFor(p)] + ' ' + LEG_LABEL[nextLegFor(p)];
+      ? 'DNF (' + LEG_LABEL[p.dnf.leg] + ')'
+      : isFinished(p) ? 'Finished'
+      : 'On ' + LEG_LABEL[nextLegFor(p)];
     const actions = [];
     if (p.dnf) {
       actions.push(el('button', { class: 'secondary', onclick: async () => { p.dnf = null; await persist(); render(); }}, 'Restore'));
@@ -804,10 +817,12 @@ function renderManage() {
     ]);
     list.appendChild(el('div', { class: 'list-row' }, [
       el('span', { class: 'name' }, p.name),
-      el('span', { class: p.type === 'team' ? 'badge-team' : 'badge-solo' }, p.type === 'team' ? 'TEAM' : 'SOLO'),
-      distToggle,
-      el('span', { style: 'color:var(--muted); margin-right:auto;' }, status),
-      ...actions,
+      el('span', { class: 'status' }, status),
+      el('div', { class: 'controls' }, [
+        el('span', { class: p.type === 'team' ? 'badge-team' : 'badge-solo' }, p.type === 'team' ? 'TEAM' : 'SOLO'),
+        distToggle,
+        ...actions,
+      ]),
     ]));
   }
   root.appendChild(list);
