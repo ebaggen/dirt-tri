@@ -187,6 +187,7 @@
   .badge-dist { font-size: 13px; padding: 2px 8px; border-radius: 6px; font-weight: 700; letter-spacing: 0.04em; }
   .badge-dist.sprint { background: #fdebd0; color: #8a5a00; }
   .badge-dist.olympic { background: #d8e9f5; color: #0a4a5e; }
+  .badge-dist.mixed { background: #ebe0f3; color: #4a2c7a; }
   .tile .badges { display: flex; gap: 6px; margin-top: 2px; }
   .select {
     font: inherit; min-height: 50px; padding: 0 12px;
@@ -251,9 +252,9 @@ async function dbSet(key, value) {
 const LEGS = ['swim', 'bike', 'run'];
 const LEG_LABEL = { swim: 'SWIM', bike: 'BIKE', run: 'RUN' };
 const LEG_EMOJI = { swim: '🏊', bike: '🚴', run: '🏃' };
-const DISTANCES = ['sprint', 'olympic'];
-const DIST_LABEL = { sprint: 'Sprint', olympic: 'Olympic' };
-const DIST_SHORT = { sprint: 'SPR', olympic: 'OLY' };
+const DISTANCES = ['sprint', 'olympic', 'mixed'];
+const DIST_LABEL = { sprint: 'Sprint', olympic: 'Olympic', mixed: 'Mixed' };
+const DIST_SHORT = { sprint: 'SPR', olympic: 'OLY', mixed: 'MIX' };
 
 const app = {
   race: null,
@@ -498,6 +499,7 @@ function addParticipantForm() {
   const distSelect = el('select', { class: 'select' }, [
     el('option', { value: 'sprint' }, 'Sprint'),
     el('option', { value: 'olympic' }, 'Olympic'),
+    el('option', { value: 'mixed' }, 'Mixed'),
   ]);
   const submit = () => {
     const name = nameInput.value.trim();
@@ -760,6 +762,7 @@ function renderManage() {
   const distSelect = el('select', { class: 'select' }, [
     el('option', { value: 'sprint' }, 'Sprint'),
     el('option', { value: 'olympic' }, 'Olympic'),
+    el('option', { value: 'mixed' }, 'Mixed'),
   ]);
   const useCustomStart = el('input', { type: 'checkbox' });
   const customStart = el('input', { type: 'time', step: '1' });
@@ -814,6 +817,7 @@ function renderManage() {
     }}, [
       el('option', { value: 'sprint', selected: p.distance === 'sprint' }, 'Sprint'),
       el('option', { value: 'olympic', selected: p.distance === 'olympic' }, 'Olympic'),
+      el('option', { value: 'mixed', selected: p.distance === 'mixed' }, 'Mixed'),
     ]);
     list.appendChild(el('div', { class: 'list-row' }, [
       el('span', { class: 'name' }, p.name),
